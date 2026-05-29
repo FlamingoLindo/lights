@@ -1,0 +1,29 @@
+base_url = "https://openapi.tuyaus.com"
+
+[token]
+access_token = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+refresh_token = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+expires_at = 1780093019
+
+[secret]
+value = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
+[headers]
+client_id = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+sign_method = "HMAC-SHA256"
+t = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+sign = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+
+[lights.source2]
+device_id = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+switch_led = true
+work_mode = "white"
+bright_value_v2 = 480
+temp_value_v2 = 1000
+
+[lights.source1]
+device_id = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+switch_led = true
+work_mode = "white"
+bright_value_v2 = 480
+temp_value_v2 = 1000
