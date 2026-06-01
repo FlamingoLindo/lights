@@ -1,3 +1,4 @@
+use crate::bulb::color::bulb_color;
 use crate::bulb::default::bulb_default;
 use crate::bulb::state::bulb_state;
 use crate::settings::settings::default_settings;
@@ -32,6 +33,20 @@ async fn main() {
         .filter_map(|light| light.device_id.clone())
         .collect();
 
+    // Change bulbs colors
+    let user_color = "BLACK";
+    bulb_color(
+        &settings.base_url,
+        &client,
+        &settings.headers.client_id,
+        &settings.secret.value,
+        &device_ids,
+        &settings.headers.sign_method,
+        &settings.token.access_token,
+        user_color,
+    )
+    .await;
+
     // Control bulbs states (on/off)
     bulb_state(
         &settings.base_url,
@@ -45,6 +60,7 @@ async fn main() {
     )
     .await;
 
+    // Restore to default settings
     bulb_default(
         &settings.base_url,
         &client,
