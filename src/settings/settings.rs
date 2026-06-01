@@ -12,6 +12,7 @@ pub struct Settings {
     pub secret: Secret,
     pub headers: Headers,
     pub lights: HashMap<String, LightSettings>,
+    pub default_settings: DefaultSettings,
 }
 #[derive(Serialize, Deserialize)]
 pub struct Secret {
@@ -38,6 +39,10 @@ pub struct Headers {
 pub struct LightSettings {
     pub device_id: Option<String>,
     pub switch_led: bool,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct DefaultSettings {
     pub work_mode: String,
     pub bright_value_v2: i32,
     pub temp_value_v2: i32,
@@ -48,9 +53,6 @@ impl Default for LightSettings {
         Self {
             device_id: None,
             switch_led: true,
-            work_mode: "white".to_string(),
-            bright_value_v2: 480,
-            temp_value_v2: 1000,
         }
     }
 }
@@ -130,6 +132,11 @@ pub fn default_settings() -> Settings {
                 );
                 map
             },
+            default_settings: DefaultSettings {
+                work_mode: "white".to_string(),
+                bright_value_v2: 480,
+                temp_value_v2: 1000,
+            },
         }
     };
 
@@ -190,5 +197,24 @@ pub fn save_token(access_token: String, refresh_token: String, expire_time: i64)
     settings.token.expires_at = Some(expires_at);
 
     let toml_string = toml::to_string(&settings).expect("Failed to serialize settings");
+    fs::write(path, toml_string).expect("Failed to write settings.toml");
+}
+
+pub fn save_led_state(state: bool) {
+    let path = Path::new("settings.toml");
+
+    let mut settings: Settings = if path.exists() {
+        let contents = fs::read_to_string(path).expect("Failed to read settings.toml");
+        toml::from_str(&contents).expect("Failed to parse settings.toml")
+    } else {
+        panic!("settings.toml not found");
+    };
+
+    for light in settings.lights.values_mut() {
+        light.switch_led = state;
+    }
+
+    let toml_string = toml::to_string(&settings).expect("Failed to serialize settings");
+
     fs::write(path, toml_string).expect("Failed to write settings.toml");
 }

@@ -14,16 +14,16 @@ sign_method = "HMAC-SHA256"
 t = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 sign = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
+[lights.source1]
+device_id = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+switch_led = true
+
 [lights.source2]
 device_id = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 switch_led = true
+
+[default_settings]
 work_mode = "white"
 bright_value_v2 = 480
 temp_value_v2 = 1000
 
-[lights.source1]
-device_id = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-switch_led = true
-work_mode = "white"
-bright_value_v2 = 480
-temp_value_v2 = 1000

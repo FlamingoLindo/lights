@@ -23,6 +23,7 @@ struct Result {
 }
 
 pub async fn request_tuya_token(
+    client: &reqwest::Client,
     client_id: &Option<String>,
     secret: &Option<String>,
     base_url: &String,
@@ -59,7 +60,6 @@ pub async fn request_tuya_token(
 
     let url = format!("{base_url}/v1.0/token?grant_type=1");
 
-    let client = reqwest::Client::new();
     match client
         .get(url)
         .header("client_id", client_id)
