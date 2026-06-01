@@ -1,75 +1,39 @@
-use crate::bulb::color::bulb_color;
-use crate::bulb::default::bulb_default;
-use crate::bulb::state::bulb_state;
-use crate::settings::settings::default_settings;
-use crate::token::get_token::request_tuya_token;
-
 mod bulb;
 mod settings;
 mod token;
+mod tuya_client;
+
+use crate::settings::settings::default_settings;
+use tuya_client::TuyaClient;
 
 #[tokio::main]
 async fn main() {
-    // Load Lights settings
     let settings = default_settings();
 
-    // Create HTTP client
-    let client = reqwest::Client::new();
+    let tuya = TuyaClient::new(
+        settings.headers.client_id.unwrap_or_default(),
+        settings.secret.value.unwrap_or_default(),
+        settings.base_url,
+        settings.headers.sign_method,
+        settings.token.access_token,
+    );
 
-    // Request auth token if needed
-    request_tuya_token(
-        &client,
-        &settings.headers.client_id,
-        &settings.secret.value,
-        &settings.base_url,
-        &settings.token.expires_at,
-    )
-    .await;
-
-    // Get bulbs ids from settings file
     let device_ids: Vec<String> = settings
         .lights
         .values()
         .filter_map(|light| light.device_id.clone())
         .collect();
 
-    // Change bulbs colors
-    let user_color = "BLACK";
-    bulb_color(
-        &settings.base_url,
-        &client,
-        &settings.headers.client_id,
-        &settings.secret.value,
-        &device_ids,
-        &settings.headers.sign_method,
-        &settings.token.access_token,
-        user_color,
-    )
-    .await;
+    tuya.request_token(&settings.token.expires_at).await;
 
-    // Control bulbs states (on/off)
-    bulb_state(
-        &settings.base_url,
-        &client,
-        &settings.headers.client_id,
-        &settings.secret.value,
-        &settings.token.access_token,
-        &settings.headers.sign_method,
-        &device_ids,
-        false,
-    )
-    .await;
+    let online = tuya.online_devices(&device_ids).await;
 
-    // Restore to default settings
-    bulb_default(
-        &settings.base_url,
-        &client,
-        &settings.headers.client_id,
-        &settings.secret.value,
-        &device_ids,
-        &settings.headers.sign_method,
-        &settings.token.access_token,
-        &settings.default_settings,
-    )
-    .await;
+    if online.is_empty() {
+        println!("No devices online");
+        return;
+    }
+
+    tuya.color(&online, "GREEN").await;
+    tuya.state(&online, false).await;
+    tuya.default(&online, &settings.default_settings).await;
 }
