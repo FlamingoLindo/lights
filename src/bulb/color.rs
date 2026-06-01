@@ -5,38 +5,12 @@ use palette::IntoColor;
 use palette::Srgb;
 use palette::named;
 use phf::phf_map;
-use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
+use crate::bulb::common::CommandValue;
+use crate::bulb::common::{Body, Command, Response};
 use crate::settings::settings::{save_sign, save_time_stamp};
-
 type HmacSha256 = Hmac<Sha256>;
-
-#[derive(Serialize)]
-pub struct Body {
-    commands: Vec<Command>,
-}
-
-#[derive(Serialize)]
-#[serde(untagged)]
-pub enum CommandValue {
-    Str(String),
-    Map(serde_json::Value),
-}
-
-#[derive(Serialize)]
-pub struct Command {
-    code: String,
-    value: CommandValue,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Response {
-    result: serde_json::Value,
-    success: bool,
-    t: i64,
-    tid: String,
-}
 
 static COLORS: phf::Map<&'static str, Srgb<u8>> = phf_map! {
     "ALICEBLUE" => named::ALICEBLUE,

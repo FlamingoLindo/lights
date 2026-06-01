@@ -1,40 +1,14 @@
 use chrono::Local;
 use hmac::{Hmac, Mac};
-use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 
+use crate::bulb::common::{Body, Command, CommandValue, Response};
 use crate::{
     bulb::state::bulb_state,
     settings::settings::{DefaultSettings, save_sign, save_time_stamp},
 };
 
 type HmacSha256 = Hmac<Sha256>;
-
-#[derive(Serialize)]
-pub struct Body {
-    commands: Vec<Command>,
-}
-
-#[derive(Serialize)]
-#[serde(untagged)]
-pub enum CommandValue {
-    Str(String),
-    Int(i32),
-}
-
-#[derive(Serialize)]
-pub struct Command {
-    code: String,
-    value: CommandValue,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-struct Response {
-    result: serde_json::Value,
-    success: bool,
-    t: i64,
-    tid: String,
-}
 
 pub async fn bulb_default(
     base_url: &String,
