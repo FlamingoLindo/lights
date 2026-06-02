@@ -17,9 +17,13 @@ pub struct Settings {
 }
 
 #[derive(Serialize, Deserialize)]
+/// https://dev.twitch.tv/console/apps
 pub struct TwitchSettings {
     pub client_id: Option<String>,
     pub client_secret: Option<String>,
+    pub broadcaster_id: Option<String>,
+    pub access_token: Option<String>,
+    pub refresh_token: Option<String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -109,6 +113,17 @@ fn fill_missing(settings: &mut Settings) {
         settings.twitch.client_secret = Some(prompt("No twitch client_secret set, please enter it"))
     }
 
+    if settings
+        .twitch
+        .broadcaster_id
+        .as_deref()
+        .unwrap_or("")
+        .is_empty()
+    {
+        settings.twitch.broadcaster_id =
+            Some(prompt("No twitch broadcaster_id set, please enter it"))
+    }
+
     for (name, light) in settings.lights.iter_mut() {
         if light.device_id.as_deref().unwrap_or("").is_empty() {
             light.device_id = Some(prompt(&format!(
@@ -168,6 +183,9 @@ pub fn default_settings() -> Settings {
             twitch: TwitchSettings {
                 client_id: Some("".to_string()),
                 client_secret: Some("".to_string()),
+                broadcaster_id: Some("".to_string()),
+                access_token: Some("".to_string()),
+                refresh_token: Some("".to_string()),
             },
         }
     };
@@ -248,5 +266,22 @@ pub fn save_led_state(state: bool) {
 
     let toml_string = toml::to_string(&settings).expect("Failed to serialize settings");
 
+    fs::write(path, toml_string).expect("Failed to write settings.toml");
+}
+
+pub fn save_twitch_tokens(access_token: String, refresh_token: String) {
+    let path = Path::new("settings.toml");
+
+    let mut settings: Settings = if path.exists() {
+        let contents = fs::read_to_string(path).expect("Failed to read settings.toml");
+        toml::from_str(&contents).expect("Failed to parse settings.toml")
+    } else {
+        panic!("settings.toml not found");
+    };
+
+    settings.twitch.access_token = Some(access_token);
+    settings.twitch.refresh_token = Some(refresh_token);
+
+    let toml_string = toml::to_string(&settings).expect("Failed to serialize settings");
     fs::write(path, toml_string).expect("Failed to write settings.toml");
 }

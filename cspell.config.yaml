@@ -6,6 +6,7 @@ dictionaries: []
 words:
   - ALICEBLUE
   - ANTIQUEWHITE
+  - authorisation
   - BLANCHEDALMOND
   - BLUEVIOLET
   - BURLYWOOD
@@ -38,6 +39,7 @@ words:
   - DIMGREY
   - DODGERBLUE
   - dotenv
+  - eventsub
   - FLORALWHITE
   - FORESTGREEN
   - GAINSBORO
@@ -86,6 +88,7 @@ words:
   - PAPAYAWHIP
   - PEACHPUFF
   - POWDERBLUE
+  - Reauthorisation
   - REBECCAPURPLE
   - reqwest
   - ROSYBROWN
