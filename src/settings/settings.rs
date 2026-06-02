@@ -13,7 +13,15 @@ pub struct Settings {
     pub headers: Headers,
     pub lights: HashMap<String, LightSettings>,
     pub default_settings: DefaultSettings,
+    pub twitch: TwitchSettings,
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct TwitchSettings {
+    pub client_id: Option<String>,
+    pub client_secret: Option<String>,
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct Secret {
     pub value: Option<String>,
@@ -81,6 +89,26 @@ fn fill_missing(settings: &mut Settings) {
         settings.headers.client_id = Some(prompt("No client_id set, please enter it:"));
     }
 
+    if settings
+        .twitch
+        .client_id
+        .as_deref()
+        .unwrap_or("")
+        .is_empty()
+    {
+        settings.twitch.client_id = Some(prompt("No twitch client_id set, please enter it"))
+    }
+
+    if settings
+        .twitch
+        .client_secret
+        .as_deref()
+        .unwrap_or("")
+        .is_empty()
+    {
+        settings.twitch.client_secret = Some(prompt("No twitch client_secret set, please enter it"))
+    }
+
     for (name, light) in settings.lights.iter_mut() {
         if light.device_id.as_deref().unwrap_or("").is_empty() {
             light.device_id = Some(prompt(&format!(
@@ -136,6 +164,10 @@ pub fn default_settings() -> Settings {
                 work_mode: "white".to_string(),
                 bright_value_v2: 480,
                 temp_value_v2: 1000,
+            },
+            twitch: TwitchSettings {
+                client_id: Some("".to_string()),
+                client_secret: Some("".to_string()),
             },
         }
     };

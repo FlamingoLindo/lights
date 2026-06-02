@@ -27,3 +27,6 @@ work_mode = "white"
 bright_value_v2 = 480
 temp_value_v2 = 1000
 
+[twitch]
+client_id = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+client_secret = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
