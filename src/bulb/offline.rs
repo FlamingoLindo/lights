@@ -33,7 +33,7 @@ pub async fn online_devices(
 
     let empty_hash = format!("{:x}", Sha256::digest(b""));
 
-    for id in devices_ids.iter() {
+    for (i, id) in devices_ids.iter().enumerate() {
         let t = Local::now().timestamp_millis().to_string();
         save_time_stamp(t.clone());
 
@@ -64,7 +64,7 @@ pub async fn online_devices(
                         println!("Device {id} is online");
                         online.push(id.clone());
                     } else {
-                        println!("Device {id} is offline, skipping");
+                        println!("Device {i} is offline, skipping");
                     }
                 }
                 Err(err) => eprintln!("Failed to parse response for {id}: {err}"),
