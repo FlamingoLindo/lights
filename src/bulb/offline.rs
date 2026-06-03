@@ -24,7 +24,7 @@ pub async fn online_devices(
     secret: &Option<String>,
     access_token: &Option<String>,
     sign_method: &String,
-    devices_ids: &Vec<String>,
+    devices_ids: &[String],
 ) -> Vec<String> {
     let client_id = client_id.as_deref().unwrap_or("");
     let secret = secret.as_deref().unwrap_or("");
@@ -64,6 +64,7 @@ pub async fn online_devices(
                         println!("Device {id} is online");
                         online.push(id.clone());
                     } else {
+                        // TODO if offline keep trying until it connects?
                         println!("Device {i} is offline, skipping");
                     }
                 }

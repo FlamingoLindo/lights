@@ -15,7 +15,7 @@ pub async fn bulb_default(
     client: &reqwest::Client,
     client_id: &Option<String>,
     secret: &Option<String>,
-    devices_ids: &Vec<String>,
+    devices_ids: &[String],
     sign_method: &String,
     access_token: &Option<String>,
     default_settings: &DefaultSettings,

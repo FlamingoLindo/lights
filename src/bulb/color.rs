@@ -20,7 +20,6 @@ static COLORS: phf::Map<&'static str, Srgb<u8>> = phf_map! {
     "AZURE" => named::AZURE,
     "BEIGE" => named::BEIGE,
     "BISQUE" => named::BISQUE,
-    "BLACK" => named::BLACK,
     "BLANCHEDALMOND" => named::BLANCHEDALMOND,
     "BLUE" => named::BLUE,
     "BLUEVIOLET" => named::BLUEVIOLET,
@@ -37,9 +36,7 @@ static COLORS: phf::Map<&'static str, Srgb<u8>> = phf_map! {
     "DARKBLUE" => named::DARKBLUE,
     "DARKCYAN" => named::DARKCYAN,
     "DARKGOLDENROD" => named::DARKGOLDENROD,
-    "DARKGRAY" => named::DARKGRAY,
     "DARKGREEN" => named::DARKGREEN,
-    "DARKGREY" => named::DARKGREY,
     "DARKKHAKI" => named::DARKKHAKI,
     "DARKMAGENTA" => named::DARKMAGENTA,
     "DARKOLIVEGREEN" => named::DARKOLIVEGREEN,
@@ -49,27 +46,19 @@ static COLORS: phf::Map<&'static str, Srgb<u8>> = phf_map! {
     "DARKSALMON" => named::DARKSALMON,
     "DARKSEAGREEN" => named::DARKSEAGREEN,
     "DARKSLATEBLUE" => named::DARKSLATEBLUE,
-    "DARKSLATEGRAY" => named::DARKSLATEGRAY,
-    "DARKSLATEGREY" => named::DARKSLATEGREY,
     "DARKTURQUOISE" => named::DARKTURQUOISE,
     "DARKVIOLET" => named::DARKVIOLET,
     "DEEPPINK" => named::DEEPPINK,
     "DEEPSKYBLUE" => named::DEEPSKYBLUE,
-    "DIMGRAY" => named::DIMGRAY,
-    "DIMGREY" => named::DIMGREY,
     "DODGERBLUE" => named::DODGERBLUE,
     "FIREBRICK" => named::FIREBRICK,
     "FLORALWHITE" => named::FLORALWHITE,
     "FORESTGREEN" => named::FORESTGREEN,
     "FUCHSIA" => named::FUCHSIA,
-    "GAINSBORO" => named::GAINSBORO,
-    "GHOSTWHITE" => named::GHOSTWHITE,
     "GOLD" => named::GOLD,
     "GOLDENROD" => named::GOLDENROD,
-    "GRAY" => named::GRAY,
     "GREEN" => named::GREEN,
     "GREENYELLOW" => named::GREENYELLOW,
-    "GREY" => named::GREY,
     "HONEYDEW" => named::HONEYDEW,
     "HOTPINK" => named::HOTPINK,
     "INDIANRED" => named::INDIANRED,
@@ -84,15 +73,11 @@ static COLORS: phf::Map<&'static str, Srgb<u8>> = phf_map! {
     "LIGHTCORAL" => named::LIGHTCORAL,
     "LIGHTCYAN" => named::LIGHTCYAN,
     "LIGHTGOLDENRODYELLOW" => named::LIGHTGOLDENRODYELLOW,
-    "LIGHTGRAY" => named::LIGHTGRAY,
     "LIGHTGREEN" => named::LIGHTGREEN,
-    "LIGHTGREY" => named::LIGHTGREY,
     "LIGHTPINK" => named::LIGHTPINK,
     "LIGHTSALMON" => named::LIGHTSALMON,
     "LIGHTSEAGREEN" => named::LIGHTSEAGREEN,
     "LIGHTSKYBLUE" => named::LIGHTSKYBLUE,
-    "LIGHTSLATEGRAY" => named::LIGHTSLATEGRAY,
-    "LIGHTSLATEGREY" => named::LIGHTSLATEGREY,
     "LIGHTSTEELBLUE" => named::LIGHTSTEELBLUE,
     "LIGHTYELLOW" => named::LIGHTYELLOW,
     "LIME" => named::LIME,
@@ -142,12 +127,8 @@ static COLORS: phf::Map<&'static str, Srgb<u8>> = phf_map! {
     "SEAGREEN" => named::SEAGREEN,
     "SEASHELL" => named::SEASHELL,
     "SIENNA" => named::SIENNA,
-    "SILVER" => named::SILVER,
     "SKYBLUE" => named::SKYBLUE,
     "SLATEBLUE" => named::SLATEBLUE,
-    "SLATEGRAY" => named::SLATEGRAY,
-    "SLATEGREY" => named::SLATEGREY,
-    "SNOW" => named::SNOW,
     "SPRINGGREEN" => named::SPRINGGREEN,
     "STEELBLUE" => named::STEELBLUE,
     "TAN" => named::TAN,
@@ -157,14 +138,12 @@ static COLORS: phf::Map<&'static str, Srgb<u8>> = phf_map! {
     "TURQUOISE" => named::TURQUOISE,
     "VIOLET" => named::VIOLET,
     "WHEAT" => named::WHEAT,
-    "WHITE" => named::WHITE,
-    "WHITESMOKE" => named::WHITESMOKE,
     "YELLOW" => named::YELLOW,
     "YELLOWGREEN" => named::YELLOWGREEN,
 };
 
 fn color_from_str(name: &str) -> Option<Srgb<u8>> {
-    COLORS.get(name.to_uppercase().as_str()).copied()
+    COLORS.get(name.trim().to_uppercase().as_str()).copied()
 }
 
 /// Colors: docs.rs/palette/latest/palette/named/index.html
@@ -173,7 +152,7 @@ pub async fn bulb_color(
     client: &reqwest::Client,
     client_id: &Option<String>,
     secret: &Option<String>,
-    devices_ids: &Vec<String>,
+    devices_ids: &[String],
     sign_method: &String,
     access_token: &Option<String>,
     color_name: &str,
@@ -198,7 +177,15 @@ pub async fn bulb_color(
 
         let hsv: Hsv = srgb.into_color();
 
-        let h = hsv.hue.into_degrees().round() as i32;
+        if hsv.saturation < 0.01 {
+            eprintln!(
+                "Color '{}' is achromatic (no hue), skipping colour_data_v2",
+                color_name
+            );
+            return;
+        }
+
+        let h = hsv.hue.into_degrees().rem_euclid(360.0).round() as i32;
         let s = (hsv.saturation * 1000.0).round() as i32;
         let v = (hsv.value * 1000.0).round() as i32;
 

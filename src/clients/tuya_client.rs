@@ -32,7 +32,7 @@ impl TuyaClient {
         }
     }
 
-    pub async fn online_devices(&self, device_ids: &Vec<String>) -> Vec<String> {
+    pub async fn online_devices(&self, device_ids: &[String]) -> Vec<String> {
         online_devices(
             &self.base_url,
             &self.http,
@@ -56,21 +56,21 @@ impl TuyaClient {
         .await;
     }
 
-    pub async fn color(&self, device_ids: &Vec<String>, color_name: &str) {
+    pub async fn color(&self, online: &[String], color: &str) {
         bulb_color(
             &self.base_url,
             &self.http,
             &Some(self.client_id.clone()),
             &Some(self.secret.clone()),
-            device_ids,
+            online,
             &self.sign_method,
             &self.access_token,
-            color_name,
+            color,
         )
         .await;
     }
 
-    pub async fn state(&self, device_ids: &Vec<String>, on: bool) {
+    pub async fn state(&self, device_ids: &[String], on: bool) {
         bulb_state(
             &self.base_url,
             &self.http,
@@ -84,7 +84,7 @@ impl TuyaClient {
         .await;
     }
 
-    pub async fn default(&self, device_ids: &Vec<String>, default_settings: &DefaultSettings) {
+    pub async fn default(&self, device_ids: &[String], default_settings: &DefaultSettings) {
         bulb_default(
             &self.base_url,
             &self.http,

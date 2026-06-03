@@ -14,7 +14,7 @@ pub async fn bulb_state(
     secret: &Option<String>,
     access_token: &Option<String>,
     sign_method: &String,
-    devices_ids: &Vec<String>,
+    devices_ids: &[String],
     state_value: bool,
 ) {
     let client_id = client_id.as_deref().unwrap_or("");
