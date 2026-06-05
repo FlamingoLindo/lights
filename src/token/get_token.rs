@@ -22,6 +22,33 @@ struct Result {
     uid: String,
 }
 
+/// Requests a new Tuya Cloud access token if the current one has expired.
+///
+/// Checks `expires_at` against the current timestamp before making any
+/// network request. If the token is still valid, the function returns early
+/// with no side effects. Otherwise, requests a new token via
+/// `GET /v1.0/token?grant_type=1` and persists the result using [`save_token`].
+///
+/// The request uses a simplified signing flow — no access token is included
+/// in the signature, as this is an unauthenticated token grant endpoint.
+///
+/// # Arguments
+///
+/// * `client` - The `reqwest` HTTP client to use for requests
+/// * `client_id` - Tuya API client ID
+/// * `secret` - Tuya API secret, used for HMAC signing
+/// * `base_url` - Base URL of the Tuya Cloud API (e.g. `https://openapi.tuyaeu.com`)
+/// * `expires_at` - Unix timestamp (seconds) of the current token's expiry.
+///   If `None`, the token request is always performed.
+///
+/// # Errors
+///
+/// Does not return errors — request and parse failures are logged to stderr
+/// via [`eprintln!`]. A failed request leaves the persisted token unchanged.
+///
+/// # Panics
+///
+/// Panics if the HMAC key is invalid.
 pub async fn request_tuya_token(
     client: &reqwest::Client,
     client_id: &Option<String>,

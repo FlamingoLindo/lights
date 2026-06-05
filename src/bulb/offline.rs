@@ -17,6 +17,36 @@ struct DeviceResult {
     online: bool,
 }
 
+/// Queries the Tuya Cloud API and returns the IDs of all online devices.
+///
+/// Sends a GET request for each device ID and checks the response for
+/// `success: true` and `result.online: true`. Only devices passing both
+/// checks are included in the returned list. Offline devices are skipped
+/// with a log message.
+///
+/// # Arguments
+///
+/// * `base_url` - Base URL of the Tuya Cloud API (e.g. `https://openapi.tuyaeu.com`)
+/// * `client` - The `reqwest` HTTP client to use for requests
+/// * `client_id` - Tuya API client ID
+/// * `secret` - Tuya API secret, used for HMAC signing
+/// * `access_token` - OAuth access token for the Tuya API
+/// * `sign_method` - Signing method identifier sent in the request header
+/// * `devices_ids` - Slice of device IDs to check
+///
+/// # Returns
+///
+/// A [`Vec<String>`] containing the IDs of devices that are currently online.
+/// Returns an empty `Vec` if no devices are reachable or all are offline.
+///
+/// # Errors
+///
+/// Does not return errors — request and parse failures are logged to stderr
+/// via [`eprintln!`] and the corresponding device is silently skipped.
+///
+/// # Panics
+///
+/// Panics if the HMAC key is invalid.
 pub async fn online_devices(
     base_url: &String,
     client: &reqwest::Client,

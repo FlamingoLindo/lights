@@ -7,6 +7,33 @@ use crate::settings::settings::{save_led_state, save_sign, save_time_stamp};
 
 type HmacSha256 = Hmac<Sha256>;
 
+/// Turns one or more Tuya smart bulbs on or off.
+///
+/// Sends a `switch_led` command to each device with the given `state_value`.
+/// On success, persists the new state via [`save_led_state`]. Each request
+/// is individually signed using HMAC-SHA256.
+///
+/// # Arguments
+///
+/// * `base_url` - Base URL of the Tuya Cloud API (e.g. `https://openapi.tuyaeu.com`)
+/// * `client` - The `reqwest` HTTP client to use for requests
+/// * `client_id` - Tuya API client ID
+/// * `secret` - Tuya API secret, used for HMAC signing
+/// * `access_token` - OAuth access token for the Tuya API
+/// * `sign_method` - Signing method identifier sent in the request header
+/// * `devices_ids` - Slice of device IDs to target
+/// * `state_value` - `true` to turn the bulbs on, `false` to turn them off
+///
+/// # Errors
+///
+/// Does not return errors — request and parse failures are logged to stderr
+/// via [`eprinln!`]. [`save_led_state`] is only called on success, so a
+/// failed request will leave the persisted state unchanged.
+///
+/// # Panics
+///
+/// Panics if the request body cannot be serialized to JSON, or if the HMAC
+/// key is invalid.
 pub async fn bulb_state(
     base_url: &String,
     client: &reqwest::Client,

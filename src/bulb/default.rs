@@ -10,6 +10,34 @@ use crate::{
 
 type HmacSha256 = Hmac<Sha256>;
 
+/// Resets one or more Tuya smart bulbs to their default settings and turns them on.
+///
+/// Sends a command to each device setting `work_mode`, `bright_value_v2`, and
+/// `temp_value_v2` from the provided [`DefaultSettings`], then calls [`bulb_state`]
+/// to ensure the bulbs are turned on afterward. Each request is individually
+/// signed using HMAC-SHA256.
+///
+/// # Arguments
+///
+/// * `base_url` - Base URL of the Tuya Cloud API (e.g. `https://openapi.tuyaeu.com`)
+/// * `client` - The `reqwest` HTTP client to use for requests
+/// * `client_id` - Tuya API client ID
+/// * `secret` - Tuya API secret, used for HMAC signing
+/// * `devices_ids` - Slice of device IDs to target
+/// * `sign_method` - Signing method identifier sent in the request header
+/// * `access_token` - OAuth access token for the Tuya API
+/// * `default_settings` - Default brightness, temperature, and work mode to apply
+///
+/// # Errors
+///
+/// This function does not return errors — failures are logged to stderr via
+/// [`eprintln!`]. The final [`bulb_state`] call to turn the bulbs on also
+/// follows the same silent-failure behavior.
+///
+/// # Panics
+///
+/// Panics if the request body cannot be serialized to JSON, or if the HMAC
+/// key is invalid.
 pub async fn bulb_default(
     base_url: &String,
     client: &reqwest::Client,

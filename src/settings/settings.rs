@@ -134,6 +134,24 @@ fn fill_missing(settings: &mut Settings) {
     }
 }
 
+/// Loads settings from `settings.toml`, prompts for any missing required
+/// fields, and writes the completed settings back to disk.
+///
+/// If `settings.toml` does not exist, a new file is created with default
+/// values before prompting. The following fields trigger an interactive
+/// prompt if empty:
+/// - `secret.value`
+/// - `headers.client_id`
+/// - `twitch.client_id`, `twitch.client_secret`, `twitch.broadcaster_id`
+/// - `device_id` for each entry in `lights`
+///
+/// # Returns
+///
+/// The fully populated [`Settings`] instance.
+///
+/// # Panics
+///
+/// Panics if `settings.toml` cannot be read, parsed, or written.
 pub fn default_settings() -> Settings {
     let path = Path::new("settings.toml");
 
@@ -198,6 +216,11 @@ pub fn default_settings() -> Settings {
     settings
 }
 
+/// Updates `headers.t` in `settings.toml` with the given timestamp.
+///
+/// # Panics
+///
+/// Panics if `settings.toml` is missing, cannot be parsed, or cannot be written.
 pub fn save_time_stamp(time_stamp: String) {
     let path = Path::new("settings.toml");
 
@@ -214,6 +237,11 @@ pub fn save_time_stamp(time_stamp: String) {
     fs::write(path, toml_string).expect("Failed to write settings.toml");
 }
 
+/// Updates `headers.sign` in `settings.toml` with the given signature.
+///
+/// # Panics
+///
+/// Panics if `settings.toml` is missing, cannot be parsed, or cannot be written.
 pub fn save_sign(sign: &str) {
     let path = Path::new("settings.toml");
 
@@ -230,6 +258,15 @@ pub fn save_sign(sign: &str) {
     fs::write(path, toml_string).expect("Failed to write settings.toml");
 }
 
+/// Persists a new Tuya access token, refresh token, and expiry to `settings.toml`.
+///
+/// `expire_time` is a duration in seconds from the current time; the absolute
+/// expiry timestamp is computed as `now + expire_time` and stored in
+/// `token.expires_at`.
+///
+/// # Panics
+///
+/// Panics if `settings.toml` is missing, cannot be parsed, or cannot be written.
 pub fn save_token(access_token: String, refresh_token: String, expire_time: i64) {
     let path = Path::new("settings.toml");
 
@@ -250,6 +287,11 @@ pub fn save_token(access_token: String, refresh_token: String, expire_time: i64)
     fs::write(path, toml_string).expect("Failed to write settings.toml");
 }
 
+/// Updates `switch_led` for all entries in `lights` in `settings.toml`.
+///
+/// # Panics
+///
+/// Panics if `settings.toml` is missing, cannot be parsed, or cannot be written.
 pub fn save_led_state(state: bool) {
     let path = Path::new("settings.toml");
 
@@ -269,6 +311,11 @@ pub fn save_led_state(state: bool) {
     fs::write(path, toml_string).expect("Failed to write settings.toml");
 }
 
+/// Persists new Twitch access and refresh tokens to `settings.toml`.
+///
+/// # Panics
+///
+/// Panics if `settings.toml` is missing, cannot be parsed, or cannot be written.
 pub fn save_twitch_tokens(access_token: String, refresh_token: String) {
     let path = Path::new("settings.toml");
 
