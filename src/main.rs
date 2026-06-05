@@ -4,6 +4,8 @@ mod settings;
 mod token;
 mod twitch;
 
+use std::time::{Duration, Instant};
+
 use crate::{
     clients::{tuya_client::TuyaClient, twitch_client::TwitchClient},
     settings::settings::default_settings,
@@ -32,7 +34,17 @@ async fn main() {
 
     let online = tuya.online_devices(&device_ids).await;
 
+    let token_ttl = Duration::from_secs(3600);
+    let mut last_token_refresh = Instant::now();
+
     loop {
-        twitch.receive(&tuya, &online, &settings.default_settings).await;
+        if last_token_refresh.elapsed() >= token_ttl {
+            tuya.request_token(&settings.token.expires_at).await;
+            last_token_refresh = Instant::now();
+        }
+
+        twitch
+            .receive(&tuya, &online, &settings.default_settings)
+            .await;
     }
 }
