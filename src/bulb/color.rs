@@ -9,6 +9,7 @@ use sha2::{Digest, Sha256};
 
 use crate::bulb::common::CommandValue;
 use crate::bulb::common::{Body, Command, Response};
+use crate::bulb::state::bulb_state;
 use crate::settings::settings::{save_sign, save_time_stamp};
 type HmacSha256 = Hmac<Sha256>;
 
@@ -146,7 +147,33 @@ fn color_from_str(name: &str) -> Option<Srgb<u8>> {
     COLORS.get(name.trim().to_uppercase().as_str()).copied()
 }
 
-/// Colors: docs.rs/palette/latest/palette/named/index.html
+/// Sends a color change command to one or more Tuya smart bulbs.
+///
+/// Converts the given CSS color name to HSV and sends a `colour_data_v2`
+/// command to each device via the Tuya Cloud API. Each request is individually
+/// signed using HMAC-SHA256.
+///
+/// # Arguments
+///
+/// * `base_url` - Base URL of the Tuya Cloud API (e.g. `https://openapi.tuyaeu.com`)
+/// * `client` - The `reqwest` HTTP client to use for requests
+/// * `client_id` - Tuya API client ID
+/// * `secret` - Tuya API secret, used for HMAC signing
+/// * `devices_ids` - Slice of device IDs to target
+/// * `sign_method` - Signing method identifier sent in the request header
+/// * `access_token` - OAuth access token for the Tuya API
+/// * `color_name` - CSS color name (e.g. `"RED"`, `"DEEPSKYBLUE"`). Case-insensitive.
+///
+/// # Errors
+///
+/// This function does not return errors — failures are logged to stderr via
+/// [`eprintln!`]. An unknown `color_name` or an achromatic color (no hue,
+/// e.g. white/black/gray) will cause the function to return early.
+///
+/// # Panics
+///
+/// Panics if the request body cannot be serialized to JSON, or if the HMAC
+/// key is invalid.
 pub async fn bulb_color(
     base_url: &String,
     client: &reqwest::Client,
@@ -157,6 +184,19 @@ pub async fn bulb_color(
     access_token: &Option<String>,
     color_name: &str,
 ) {
+    // Turn bulbs on in case they were previously off
+    bulb_state(
+        base_url,
+        client,
+        client_id,
+        secret,
+        access_token,
+        sign_method,
+        devices_ids,
+        true,
+    )
+    .await;
+
     let color = match color_from_str(color_name) {
         Some(c) => c,
         None => {
