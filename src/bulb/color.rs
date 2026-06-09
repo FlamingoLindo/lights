@@ -13,7 +13,7 @@ use crate::bulb::state::bulb_state;
 use crate::settings::settings::{save_sign, save_time_stamp};
 type HmacSha256 = Hmac<Sha256>;
 
-static COLORS: phf::Map<&'static str, Srgb<u8>> = phf_map! {
+pub static COLORS: phf::Map<&'static str, Srgb<u8>> = phf_map! {
     "ALICEBLUE" => named::ALICEBLUE,
     "ANTIQUEWHITE" => named::ANTIQUEWHITE,
     "AQUA" => named::AQUA,
@@ -184,6 +184,14 @@ pub async fn bulb_color(
     access_token: &Option<String>,
     color_name: &str,
 ) {
+    let color = match color_from_str(color_name) {
+        Some(c) => c,
+        None => {
+            eprintln!("Unknown color: {}", color_name);
+            return;
+        }
+    };
+
     // Turn bulbs on in case they were previously off
     bulb_state(
         base_url,
@@ -196,14 +204,6 @@ pub async fn bulb_color(
         true,
     )
     .await;
-
-    let color = match color_from_str(color_name) {
-        Some(c) => c,
-        None => {
-            eprintln!("Unknown color: {}", color_name);
-            return;
-        }
-    };
 
     let client_id_value = client_id.as_deref().unwrap_or("");
     let secret_value = secret.as_deref().unwrap_or("");

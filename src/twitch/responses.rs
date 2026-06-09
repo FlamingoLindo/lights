@@ -51,17 +51,26 @@ pub async fn get_responses(
                         reward.reward.cost,
                         reward.user_input,
                     );
+                    // Custom color
                     if reward.reward.title == "Change Lights Color" {
                         tuya.color(online, &reward.user_input.to_string()).await;
                         *last_color_change = Some(Instant::now());
                     }
+                    // Turn lights off
                     if reward.reward.title == "Turn Lights Off" {
                         tuya.state(online, false).await;
                         *last_color_change = Some(Instant::now());
                     }
+                    // Turn lights on
                     if reward.reward.title == "Turn Lights On" {
                         tuya.state(online, true).await;
                         tuya.default(online, default_settings).await;
+                        *last_color_change = Some(Instant::now());
+                    }
+                    // Bosnia lights
+                    if reward.reward.title == "Bosnian Lights" {
+                        tuya.state(online, true).await;
+                        tuya.bosnia(online).await;
                         *last_color_change = Some(Instant::now());
                     }
                 }

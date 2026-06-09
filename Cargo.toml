@@ -17,3 +17,4 @@ hex = "0.4"
 reqwest = { version = "0.13.4", features = ["json"] }
 phf = { version = "0.13.1", features = ["macros"] }
 twitch_eventsub = "0.1.2"
+rand = "0.10.1"

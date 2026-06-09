@@ -1,3 +1,4 @@
+use crate::bulb::bosnia::bosnian_bulbs;
 use crate::bulb::color::bulb_color;
 use crate::bulb::default::bulb_default;
 use crate::bulb::offline::online_devices;
@@ -94,6 +95,19 @@ impl TuyaClient {
             &self.sign_method,
             &self.access_token,
             default_settings,
+        )
+        .await;
+    }
+
+    pub async fn bosnia(&self, online: &[String]) {
+        bosnian_bulbs(
+            &self.base_url,
+            &self.http,
+            &Some(self.client_id.clone()),
+            &Some(self.secret.clone()),
+            online,
+            &self.sign_method,
+            &self.access_token,
         )
         .await;
     }

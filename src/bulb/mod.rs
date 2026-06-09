@@ -1,3 +1,4 @@
+pub mod bosnia;
 pub mod color;
 pub mod common;
 pub mod default;
