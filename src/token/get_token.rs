@@ -3,7 +3,6 @@ use chrono::prelude::*;
 use hmac::{Hmac, Mac};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-
 type HmacSha256 = Hmac<Sha256>;
 
 #[derive(Serialize, Deserialize)]
@@ -38,13 +37,15 @@ struct Result {
 /// * `client_id` - Tuya API client ID
 /// * `secret` - Tuya API secret, used for HMAC signing
 /// * `base_url` - Base URL of the Tuya Cloud API (e.g. `https://openapi.tuyaeu.com`)
-/// * `expires_at` - Unix timestamp (seconds) of the current token's expiry.
-///   If `None`, the token request is always performed.
+///
+/// # Returns
+///
+/// Returns `Some((access_token, expires_in_secs))` on success, `None` on failure.
 ///
 /// # Errors
 ///
 /// Does not return errors — request and parse failures are logged to stderr
-/// via [`eprintln!`]. A failed request leaves the persisted token unchanged.
+/// via [`eprintln!`].
 ///
 /// # Panics
 ///
@@ -54,17 +55,7 @@ pub async fn request_tuya_token(
     client_id: &Option<String>,
     secret: &Option<String>,
     base_url: &String,
-    expires_at: &Option<i64>,
-) {
-    let now = Local::now().timestamp();
-
-    if let Some(exp) = expires_at {
-        if now < *exp {
-            println!("Token still valid, skipping request.");
-            return;
-        }
-    }
-
+) -> Option<(String, u64)> {
     let t: String = Local::now().timestamp_millis().to_string();
     save_time_stamp(t.clone());
 
@@ -74,7 +65,6 @@ pub async fn request_tuya_token(
     let mut hasher = Sha256::new();
     hasher.update(b"");
     let body_hash = format!("{:x}", hasher.finalize());
-
     let content_to_sign = format!("GET\n{body_hash}\n\n/v1.0/token?grant_type=1");
     let string_to_sign = format!("{client_id}{t}{content_to_sign}");
 
@@ -82,11 +72,9 @@ pub async fn request_tuya_token(
         HmacSha256::new_from_slice(secret.as_bytes()).expect("HMAC can take key of any size");
     mac.update(string_to_sign.as_bytes());
     let sign = hex::encode(mac.finalize().into_bytes()).to_uppercase();
-
     save_sign(&sign);
 
     let url = format!("{base_url}/v1.0/token?grant_type=1");
-
     match client
         .get(url)
         .header("client_id", client_id)
@@ -99,18 +87,23 @@ pub async fn request_tuya_token(
     {
         Ok(response) => match response.json::<TokenResponse>().await {
             Ok(parsed) => {
+                let access_token = parsed.result.access_token.clone();
+                let expires_in_secs = parsed.result.expire_time as u64;
                 save_token(
                     parsed.result.access_token,
                     parsed.result.refresh_token,
                     parsed.result.expire_time,
                 );
+                Some((access_token, expires_in_secs))
             }
             Err(err) => {
                 eprintln!("Failed to parse response: {err}");
+                None
             }
         },
         Err(err) => {
             eprintln!("Request failed: {err}");
+            None
         }
     }
 }

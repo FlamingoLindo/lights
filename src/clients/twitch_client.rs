@@ -31,7 +31,7 @@ impl TwitchClient {
 
     pub async fn receive(
         &mut self,
-        tuya: &TuyaClient,
+        tuya: &mut TuyaClient,
         online: &[String],
         default_settings: &DefaultSettings,
     ) {

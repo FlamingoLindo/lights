@@ -34,7 +34,7 @@ use crate::{clients::tuya_client::TuyaClient, settings::settings::DefaultSetting
 /// not acted upon.
 pub async fn get_responses(
     api: &mut TwitchEventSubApi,
-    tuya: &TuyaClient,
+    tuya: &mut TuyaClient,
     online: &[String],
     default_settings: &DefaultSettings,
     last_color_change: &mut Option<Instant>,
